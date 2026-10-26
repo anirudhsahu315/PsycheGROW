@@ -24,6 +24,7 @@ export const MyLibrary = ({
   savedScripts = [], 
   onReviewTopic, 
   onTurnIntoContent, 
+  onUnmasterTopic,
   onDeleteScript, 
   onBackToDashboard, 
   onShowToast, 
@@ -187,10 +188,22 @@ export const MyLibrary = ({
                           {topic.branch}
                         </span>
 
-                        <span className="flex items-center gap-1 text-[11px] font-bold text-[#52684F] bg-[#EFF4EE] px-2 py-0.5 rounded-md border border-[#D2E0D0]">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Mastered
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-1 text-[11px] font-bold text-[#52684F] bg-[#EFF4EE] px-2 py-0.5 rounded-md border border-[#D2E0D0]">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Mastered
+                          </span>
+                          {onUnmasterTopic && (
+                            <button
+                              onClick={() => onUnmasterTopic(topic.id)}
+                              title="Unmark as mastered"
+                              className="p-1 rounded-md text-[#7E8B97] hover:text-[#9E473D] hover:bg-[#FDF2F2] transition-colors"
+                              aria-label="Unmark as mastered"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       {/* Topic Title */}
@@ -216,9 +229,11 @@ export const MyLibrary = ({
                         <div className="flex items-center justify-between">
                           <span className="flex items-center gap-1.5 text-[#7E8B97]">
                             <Award className="w-3.5 h-3.5 text-[#647D61]" />
-                            Mastery XP:
+                            Difficulty:
                           </span>
-                          <span className="text-[#52684F] font-bold">+50 Mind XP</span>
+                          <span className="text-[#1F262E] font-medium capitalize">
+                            {topic.difficulty || 'Intermediate'}
+                          </span>
                         </div>
                       </div>
                     </div>

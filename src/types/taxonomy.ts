@@ -105,7 +105,6 @@ export interface DeepDiveConclusion {
 export interface ContentHook {
   format: string;
   hook: string;
-  engagementRate: string;
 }
 
 // 4-Step "Top 1%" High-Retention Micro-Learning Framework
@@ -148,6 +147,16 @@ export interface TopOnePercentFramework {
   };
 }
 
+export interface TopicReference {
+  title: string;
+  authors: string;
+  year: number;
+  url: string;
+  note?: string;
+}
+
+export type EvidenceStatus = 'well-supported' | 'mixed-evidence' | 'contested' | 'philosophical-tradition';
+
 export interface PsychologyTopic {
   id: string;
   title: string;
@@ -173,12 +182,7 @@ export interface PsychologyTopic {
   topOnePercentFramework?: TopOnePercentFramework;
   contentHooks: ContentHook[];
   scriptTemplate?: string;
-  stats?: {
-    learners: string;
-    createdContent: string;
-    viralityScore: number;
-  };
   dialectic?: DialecticPerspective;
-  isAgentSynthesized?: boolean;
-  synthesizedAt?: string;
+  references?: TopicReference[];
+  evidenceStatus?: EvidenceStatus;
 }

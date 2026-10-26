@@ -28,6 +28,10 @@ export const Footer = () => {
         </div>
 
       </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 pt-4 border-t border-[#EAE5DC] text-center text-[11px] text-[#8C98A4]">
+        <p>PsycheGrow is for education only and is not medical or psychological advice.</p>
+      </div>
     </footer>
   );
 };

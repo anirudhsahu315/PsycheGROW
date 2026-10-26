@@ -1,12 +1,13 @@
 import React from 'react';
-import { Flame, Calendar, CheckCircle2, X, Award, Sparkles } from 'lucide-react';
+import { Flame, Calendar, CheckCircle2, X, Award, Sparkles, Shield } from 'lucide-react';
 import { getWeeklyActivity } from '../utils/streakManager';
 
 export const StreakModal = ({ 
   isOpen, 
   onClose, 
   streakCount = 0,
-  streakData = null
+  streakData = null,
+  totalMastered = 0
 }) => {
   if (!isOpen) return null;
 
@@ -51,11 +52,19 @@ export const StreakModal = ({
             )}
           </p>
 
+          {/* One-line streak freeze notice */}
+          {streakData?.freezeUsedOn && (
+            <div className="mt-2.5 flex items-center gap-1.5 text-xs text-[#655A7B] bg-[#F2EFF6] border border-[#DDD8E6] px-3 py-1 rounded-lg font-medium">
+              <Shield className="w-3.5 h-3.5 text-[#7A6F91]" />
+              <span>Streak freeze saved your streak on {streakData.freezeUsedOn}.</span>
+            </div>
+          )}
+
           {/* Quick Metrics Bar */}
           <div className="flex items-center gap-4 mt-4 px-4 py-2 rounded-xl bg-[#FAF8F5] border border-[#EAE5DC] text-xs">
             <div className="flex items-center gap-1.5 text-[#596773]">
               <Award className="w-3.5 h-3.5 text-[#7A6F91]" />
-              <span>Mastered: <strong className="text-[#1F262E]">{streakData?.totalMastered || 0}</strong></span>
+              <span>Mastered: <strong className="text-[#1F262E]">{totalMastered}</strong></span>
             </div>
             <div className="w-px h-3 bg-[#D0C8BC]" />
             <div className="flex items-center gap-1.5 text-[#596773]">

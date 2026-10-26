@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { Header } from './components/Header';
 import { CategorySelection } from './components/CategorySelection';
 import { TopicGrid } from './components/TopicGrid';
-import { TopicModal } from './components/TopicModal';
 import { StreakModal } from './components/StreakModal';
 import { InteractiveStudySession } from './components/InteractiveStudySession';
 import { ContentCreationStudio } from './components/ContentCreationStudio';
@@ -13,16 +12,18 @@ import { Footer } from './components/Footer';
 import { PSYCHOLOGY_TOPICS } from './data/topics';
 import { 
   loadStreakData, 
-  recordStreakActivity 
+  recordStreakActivity,
+  getTodayString 
 } from './utils/streakManager';
-import { 
-  loadGeneratedTopics, 
-  researchNewPsychologyTopic 
-} from './data/topicResearchAgent';
+// Migration: remove old fake generated topics from localStorage
+try {
+  localStorage.removeItem('psychegrow_generated_topics');
+} catch {}
 
 const COMPLETED_STORAGE_KEY = 'psychegrow_completed_topic_ids';
 const SAVED_SCRIPTS_STORAGE_KEY = 'psychegrow_saved_scripts';
 const ACTIVE_MAP_STORAGE_KEY = 'psychegrow_active_topics_map';
+const MASTERED_TODAY_STORAGE_KEY = 'psychegrow_mastered_today_ids';
 
 export function App() {
   // Mode Switcher state: 'study' (🧠 Study Mode) or 'content' (🎬 Content Studio)
@@ -44,20 +45,8 @@ export function App() {
   // Streak state management with date verification and local storage persistence
   const [streakData, setStreakData] = useState(() => loadStreakData());
 
-  // Dynamic Topic Generation Agent state
-  const [generatedTopics, setGeneratedTopics] = useState(() => loadGeneratedTopics());
-  const [isAgentResearching, setIsAgentResearching] = useState(false);
-  const [researchStageText, setResearchStageText] = useState('');
-
-  // Merged pool of all available topics (curated static + agent-synthesized)
-  const allTopicsPool = useMemo(() => {
-    const map = new Map();
-    // Add static topics
-    PSYCHOLOGY_TOPICS.forEach((t) => map.set(t.id, t));
-    // Add dynamically synthesized topics
-    generatedTopics.forEach((t) => map.set(t.id, t));
-    return Array.from(map.values());
-  }, [generatedTopics]);
+  // Merged pool of all available topics (curated bank)
+  const allTopicsPool = useMemo(() => PSYCHOLOGY_TOPICS, []);
 
   // Mastered & completed topic IDs
   const [completedTopicIds, setCompletedTopicIds] = useState(() => {
@@ -67,9 +56,9 @@ export function App() {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) return parsed;
       }
-      return ['anchoring-effect'];
+      return [];
     } catch {
-      return ['anchoring-effect'];
+      return [];
     }
   });
 
@@ -81,38 +70,48 @@ export function App() {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) return parsed;
       }
-      return [
-        {
-          id: 'saved-1',
-          topicId: 'cognitive-dissonance',
-          topicTitle: 'Cognitive Dissonance',
-          branch: 'Cognitive Psychology',
-          format: 'reel',
-          formatLabel: 'Reel / Short Script',
-          tone: 'viral',
-          toneLabel: 'Viral & Catchy',
-          title: 'Reel Script: Why Your Brain Gaslights You',
-          previewText: "Your brain would rather lie to your face than admit you made a stupid decision. Here's why...",
-          savedAt: 'Oct 24, 2026',
-          fullContent: `🎬 REEL / SHORT SCRIPT: Why Your Brain Gaslights You\n⏱ Duration: 45-55 seconds | Platform: Instagram Reels / TikTok / YouTube Shorts\n\n[HOOK (0 - 3s)]\n👀 Visual Cue: Close-up on face, leaning in, pointing at camera.\n📱 On-Screen Text: YOUR BRAIN IS GASLIGHTING YOU 🧠🚨\n🎙️ Voiceover: "Your brain would rather lie to your face than admit you made a stupid decision. Here's why."\n\n[THE FRICTION (3 - 15s)]\n👀 Visual Cue: Fast cut scrolling online store late at night.\n📱 On-Screen Text: Late Night Regret vs Mental Math 🛒\n🎙️ Voiceover: "Ever buy something expensive you swore you didn't need? The second the receipt pings, you feel intense guilt. But within 30 seconds, your brain invents 4 ridiculous reasons why it was actually an 'investment in your productivity'."`
-        }
-      ];
+      return [];
     } catch {
       return [];
     }
   });
+
+  // Topics mastered today: prevents re-marking from re-triggering confetti or double-counting activity
+  const [masteredTodayIds, setMasteredTodayIds] = useState(() => {
+    try {
+      const stored = localStorage.getItem(MASTERED_TODAY_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.date === getTodayString() && Array.isArray(parsed?.ids)) {
+          return parsed.ids;
+        }
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  });
+
+  const saveMasteredToday = (ids) => {
+    try {
+      localStorage.setItem(MASTERED_TODAY_STORAGE_KEY, JSON.stringify({
+        date: getTodayString(),
+        ids
+      }));
+    } catch {}
+  };
 
   // Detailed view states: study session, content studio, or library
   const [studyTopic, setStudyTopic] = useState(null);
   const [contentTopic, setContentTopic] = useState(null);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 
-  // Quick preview modal topic & other states
-  const [selectedTopic, setSelectedTopic] = useState(null);
+  // Header, search, streak modal & other UI states
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState('');
   const [isRotating, setIsRotating] = useState(false);
+  const toastTimeoutRef = useRef(null);
 
   // Confetti celebration helper
   const triggerConfetti = () => {
@@ -129,10 +128,22 @@ export function App() {
   };
 
   const showToast = (msg) => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
     setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage((prev) => (prev === msg ? '' : prev));
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastMessage('');
+      toastTimeoutRef.current = null;
     }, 3600);
+  };
+
+  const handleCloseToast = () => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = null;
+    }
+    setToastMessage('');
   };
 
   // Helper to persist activeTopicsMap
@@ -247,59 +258,7 @@ export function App() {
     return fallback4;
   }, [selectedCategory, activeTopicsMap, allTopicsPool, allCategoryTopics, completedTopicIds]);
 
-  // Dynamic Topic Generation Agent trigger (Simulates Perplexity-style deep research)
-  const handleTriggerAgentResearch = async (targetCategory = selectedCategory) => {
-    if (!targetCategory || isAgentResearching) return;
 
-    setIsAgentResearching(true);
-    setResearchStageText(`Querying APA archives for "${targetCategory}"...`);
-
-    try {
-      const existingIds = allTopicsPool.map((t) => t.id);
-      const newTopic = await researchNewPsychologyTopic({
-        categoryName: targetCategory,
-        existingTopicIds: existingIds,
-        onProgress: (stageMsg) => {
-          setResearchStageText(stageMsg);
-        }
-      });
-
-      // 1. Add to generated topics pool
-      setGeneratedTopics((prev) => [newTopic, ...prev]);
-
-      // 2. Automatically slot newly synthesized topic into the active 4 topics
-      setActiveTopicsMap((prev) => {
-        const currentIds = prev[targetCategory] || activeTopics.map((t) => t.id);
-        let updatedIds;
-        
-        if (currentIds.length >= 4) {
-          // If any completed card is currently displayed on dashboard, replace that first
-          const completedIdx = currentIds.findIndex((id) => completedTopicIds.includes(id));
-          if (completedIdx !== -1) {
-            updatedIds = [...currentIds];
-            updatedIds[completedIdx] = newTopic.id;
-          } else {
-            // Otherwise, shift along
-            updatedIds = [...currentIds.slice(1), newTopic.id];
-          }
-        } else {
-          updatedIds = [...currentIds, newTopic.id];
-        }
-
-        const nextMap = { ...prev, [targetCategory]: updatedIds };
-        persistActiveMap(nextMap);
-        return nextMap;
-      });
-
-      triggerConfetti();
-      showToast(`✨ Deep Research Synthesized: "${newTopic.title}" • Added to dashboard!`);
-    } catch {
-      showToast('Deep research synthesis timed out. Please try again.');
-    } finally {
-      setIsAgentResearching(false);
-      setResearchStageText('');
-    }
-  };
 
   // Auto-rotation & Lifecycle Logic:
   // Completing a topic records daily streak, archives to Vault, and auto-replaces with fresh topic
@@ -308,59 +267,71 @@ export function App() {
 
     if (isCurrentlyCompleted) {
       // Unmarking topic
-      const updated = completedTopicIds.filter((id) => id !== topicId);
-      setCompletedTopicIds(updated);
-      try {
-        localStorage.setItem(COMPLETED_STORAGE_KEY, JSON.stringify(updated));
-      } catch {}
+      const updatedCompleted = completedTopicIds.filter((id) => id !== topicId);
+      setCompletedTopicIds(() => {
+        try {
+          localStorage.setItem(COMPLETED_STORAGE_KEY, JSON.stringify(updatedCompleted));
+        } catch {}
+        return updatedCompleted;
+      });
       showToast('Topic status updated to in-progress');
-    } else {
-      // 1. Update daily streak with calendar date validation
-      const updatedStreak = recordStreakActivity('complete_topic');
-      setStreakData(updatedStreak);
+      return;
+    }
 
-      // 2. Mark completed and persist to library vault
-      const updatedCompleted = [...completedTopicIds, topicId];
-      setCompletedTopicIds(updatedCompleted);
+    // 1. Topic is being mastered: compute updatedCompleted first!
+    const updatedCompleted = [...completedTopicIds, topicId];
+    setCompletedTopicIds(() => {
       try {
         localStorage.setItem(COMPLETED_STORAGE_KEY, JSON.stringify(updatedCompleted));
       } catch {}
+      return updatedCompleted;
+    });
 
+    // 2. Re-marking a topic that was already mastered once today must not trigger confetti again or double-count activity
+    const wasAlreadyMasteredToday = masteredTodayIds.includes(topicId);
+
+    if (!wasAlreadyMasteredToday) {
+      const updatedStreak = recordStreakActivity('complete_topic');
+      setStreakData(updatedStreak);
       triggerConfetti();
 
-      // Find topic object to identify branch
-      const completedTopic = allTopicsPool.find((t) => t.id === topicId);
-      const catName = completedTopic?.branch || selectedCategory;
+      setMasteredTodayIds((prev) => {
+        const next = [...prev, topicId];
+        saveMasteredToday(next);
+        return next;
+      });
+    }
 
-      if (catName) {
-        const currentActiveIds = activeTopicsMap[catName] || activeTopics.map((t) => t.id);
+    // 3. Rotation logic using updatedCompleted (not reading completedTopicIds after setter)
+    const completedTopic = allTopicsPool.find((t) => t.id === topicId);
+    const catName = completedTopic?.branch || selectedCategory;
 
-        // Find candidate fresh topic in same category (not active and not yet completed)
-        const categoryAll = allTopicsPool.filter(
-          (t) => t.branch.toLowerCase() === catName.toLowerCase()
-        );
+    if (catName) {
+      const categoryAll = allTopicsPool.filter((t) => matchCategory(t, catName));
 
-        let candidate = categoryAll.find(
+      setActiveTopicsMap((prevMap) => {
+        const currentActiveIds = prevMap[catName] || activeTopics.map((t) => t.id);
+
+        // Find next unmastered candidate topic in the same category (not active, not in updatedCompleted)
+        const candidate = categoryAll.find(
           (t) => !currentActiveIds.includes(t.id) && !updatedCompleted.includes(t.id)
         );
 
         if (candidate) {
           // Replace completed topic card with the candidate
           const newActiveIds = currentActiveIds.map((id) => (id === topicId ? candidate.id : id));
-          setActiveTopicsMap((prev) => {
-            const nextMap = { ...prev, [catName]: newActiveIds };
-            persistActiveMap(nextMap);
-            return nextMap;
-          });
+          const nextMap = { ...prevMap, [catName]: newActiveIds };
+          persistActiveMap(nextMap);
           showToast(`Mastered! "${candidate.title}" rotated in • Finished topic transferred to Library`);
+          return nextMap;
         } else {
-          // If all static modules are completed, automatically invoke Deep Research Agent!
-          showToast(`Mastered! Finished topic archived. Synthesizing fresh module via Deep Research...`);
-          handleTriggerAgentResearch(catName);
+          // If none remain, leave the mastered card in place and show the toast
+          showToast("You've finished every topic in this category.");
+          return prevMap;
         }
-      } else {
-        showToast('Mastered! Topic transferred to your Library archive.');
-      }
+      });
+    } else {
+      showToast('Mastered! Topic transferred to your Library archive.');
     }
   };
 
@@ -368,28 +339,36 @@ export function App() {
   const handleManualRotate = () => {
     if (!selectedCategory) return;
     setIsRotating(true);
-    const currentIds = activeTopicsMap[selectedCategory] || activeTopics.map((t) => t.id);
 
-    // Candidates in same category not currently in the 4 active
-    const candidates = allCategoryTopics.filter((t) => !currentIds.includes(t.id));
+    setActiveTopicsMap((prevMap) => {
+      const currentIds = prevMap[selectedCategory] || activeTopics.map((t) => t.id);
 
-    if (candidates.length > 0) {
-      // Prioritize uncompleted candidate if available
-      const uncompletedCandidate = candidates.find((t) => !completedTopicIds.includes(t.id));
-      const freshOne = uncompletedCandidate || candidates[0];
+      // Candidates in same category not currently in the 4 active
+      const candidates = allCategoryTopics.filter((t) => !currentIds.includes(t.id));
 
-      const nextActive = [...currentIds.slice(1), freshOne.id];
-      setActiveTopicsMap((prev) => {
-        const nextMap = { ...prev, [selectedCategory]: nextActive };
-        persistActiveMap(nextMap);
-        return nextMap;
-      });
-      showToast(`Rotated in fresh module: "${freshOne.title}"`);
-    } else {
-      // If all category topics are active, trigger Deep Research for a brand-new concept!
-      showToast('All category topics active! Triggering Deep Research Agent for fresh topic...');
-      handleTriggerAgentResearch(selectedCategory);
-    }
+      // Find unused (not completed) candidate
+      const unusedCandidate = candidates.find((t) => !completedTopicIds.includes(t.id));
+
+      if (!unusedCandidate) {
+        showToast("You've finished every topic in this category.");
+        return prevMap;
+      }
+
+      // Never drop an unmastered topic from the active list; swap out a mastered one first
+      const masteredIndex = currentIds.findIndex((id) => completedTopicIds.includes(id));
+
+      if (masteredIndex === -1) {
+        showToast("All active topics are in-progress. Master a topic first to rotate.");
+        return prevMap;
+      }
+
+      const nextActive = [...currentIds];
+      nextActive[masteredIndex] = unusedCandidate.id;
+      const nextMap = { ...prevMap, [selectedCategory]: nextActive };
+      persistActiveMap(nextMap);
+      showToast(`Rotated in fresh module: "${unusedCandidate.title}"`);
+      return nextMap;
+    });
 
     setTimeout(() => setIsRotating(false), 250);
   };
@@ -418,9 +397,10 @@ export function App() {
   };
 
   // Called when user selects a card from the 4-topic grid
-  const handleSelectTopicFromGrid = (topic) => {
+  const handleSelectTopicFromGrid = (topic, modeOverride) => {
     setIsLibraryOpen(false);
-    if (currentMode === 'study') {
+    const targetMode = modeOverride || currentMode;
+    if (targetMode === 'study') {
       setStudyTopic(topic);
       setContentTopic(null);
     } else {
@@ -494,7 +474,7 @@ export function App() {
           setContentTopic(null);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
-        libraryCount={completedTopicIds.length + savedScripts.length}
+        libraryCount={completedTopicsList.length + savedScripts.length}
         onLogoClick={handleChangeCategory}
       />
 
@@ -515,6 +495,7 @@ export function App() {
               setIsLibraryOpen(false);
               handleTurnIntoContent(t);
             }}
+            onUnmasterTopic={handleToggleComplete}
             onDeleteScript={handleDeleteScript}
             onBackToDashboard={handleBackToDashboard}
             onShowToast={showToast}
@@ -531,6 +512,7 @@ export function App() {
             isMastered={completedTopicIds.includes(studyTopic.id)}
             onTriggerConfetti={triggerConfetti}
             onShowToast={showToast}
+            onStreakUpdate={setStreakData}
           />
         ) : contentTopic ? (
           // View: Content Creation Studio View
@@ -549,10 +531,10 @@ export function App() {
           <CategorySelection
             onSelectCategory={handleSelectCategory}
             selectedCategory={selectedCategory}
-            completedCount={completedTopicIds.length}
+            completedCount={completedTopicsList.length}
           />
         ) : (
-          // Category-Driven Dashboard (Exactly 4 Active Topics with Endless Loop & Deep Research)
+          // Category-Driven Dashboard (Exactly 4 Active Topics with Endless Loop)
           <TopicGrid
             currentMode={currentMode}
             selectedCategory={selectedCategory}
@@ -561,14 +543,9 @@ export function App() {
             allCategoryTopics={allCategoryTopics}
             onSelectTopic={handleSelectTopicFromGrid}
             completedTopicIds={completedTopicIds}
-            onToggleComplete={handleToggleComplete}
             searchQuery={searchQuery}
-            onTriggerConfetti={triggerConfetti}
             onRotateTopics={handleManualRotate}
             isRotating={isRotating}
-            onTriggerAgentResearch={() => handleTriggerAgentResearch(selectedCategory)}
-            isAgentResearching={isAgentResearching}
-            researchStageText={researchStageText}
           />
         )}
 
@@ -577,29 +554,19 @@ export function App() {
       {/* Footer (shown when on category selection or category dashboard) */}
       {!studyTopic && !contentTopic && !isLibraryOpen && <Footer />}
 
-      {/* Quick Topic Modal */}
-      <TopicModal
-        topic={selectedTopic}
-        currentMode={currentMode}
-        onClose={() => setSelectedTopic(null)}
-        isCompleted={selectedTopic ? completedTopicIds.includes(selectedTopic.id) : false}
-        onMarkComplete={handleToggleComplete}
-        onShowToast={showToast}
-        onTriggerConfetti={triggerConfetti}
-      />
-
       {/* Streak Details Modal with Dynamic Calendar Tracking */}
       <StreakModal
         isOpen={isStreakModalOpen}
         onClose={() => setIsStreakModalOpen(false)}
         streakCount={streakData?.streakCount || 0}
         streakData={streakData}
+        totalMastered={completedTopicIds.length}
       />
 
       {/* Feedback Toast */}
       <Toast
         message={toastMessage}
-        onClose={() => setToastMessage('')}
+        onClose={handleCloseToast}
       />
 
     </div>

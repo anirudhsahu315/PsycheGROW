@@ -4,7 +4,6 @@ import {
   ArrowLeft, 
   RotateCw, 
   Sparkle, 
-  Sparkles,
   CheckCircle2, 
   Layers,
   AlertCircle
@@ -19,14 +18,9 @@ export const TopicGrid = ({
   allCategoryTopics = [],
   onSelectTopic, 
   completedTopicIds = [], 
-  onToggleComplete,
   searchQuery,
-  onTriggerConfetti,
   onRotateTopics,
-  isRotating = false,
-  onTriggerAgentResearch,
-  isAgentResearching = false,
-  researchStageText = ''
+  isRotating = false
 }) => {
   // Find category metadata
   const currentCategoryObj = PSYCHOLOGY_CATEGORIES.find(
@@ -93,7 +87,7 @@ export const TopicGrid = ({
 
         </div>
 
-        {/* Right: Rotation status, Deep Research Agent, and Refresh */}
+        {/* Right: Rotation status and Refresh */}
         <div className="flex items-center gap-2 flex-wrap self-start md:self-auto">
           
           {/* Completed in this branch indicator */}
@@ -104,51 +98,20 @@ export const TopicGrid = ({
             </span>
           </div>
 
-          {/* Deep Research Topic Agent Trigger Button */}
-          <button
-            onClick={onTriggerAgentResearch}
-            disabled={isAgentResearching}
-            title="Trigger Perplexity-style Deep Research Agent to synthesize a brand-new peer-reviewed topic"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F2EFF6] border border-[#DDD8E6] text-[#655A7B] hover:bg-[#EAE4F2] text-xs font-semibold transition-all disabled:opacity-50 shadow-subtle"
-          >
-            <Sparkles className={`w-3.5 h-3.5 ${isAgentResearching ? 'animate-spin text-[#7A6F91]' : 'text-[#7A6F91]'}`} />
-            <span className="hidden sm:inline">
-              {isAgentResearching ? 'Researching...' : 'Deep Research Topic'}
-            </span>
-          </button>
-
           {/* Manual fresh topic rotation button */}
           <button
             onClick={onRotateTopics}
             disabled={isRotating}
-            title="Rotate in fresh topic from this category"
+            title="Show another topic from this category"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E7E2D8] text-[#596773] hover:text-[#1F262E] hover:border-[#D0C8BC] text-xs font-semibold transition-all disabled:opacity-50 shadow-subtle"
           >
             <RotateCw className={`w-3.5 h-3.5 ${isRotating ? 'animate-spin text-[#7A6F91]' : ''}`} />
-            <span className="hidden sm:inline">Rotate Fresh</span>
+            <span className="hidden sm:inline">Show another topic</span>
           </button>
 
         </div>
 
       </div>
-
-      {/* Live Deep Research Agent Progress Banner */}
-      {isAgentResearching && (
-        <div className="mb-6 p-4 rounded-xl bg-[#F2EFF6] border border-[#DDD8E6] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#655A7B] animate-pulse">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-lg bg-[#7A6F91] text-white flex items-center justify-center font-bold text-xs shadow-subtle">
-              ⚡
-            </div>
-            <div>
-              <div className="font-bold text-[#1F262E]">Deep Research Synthesis in Progress</div>
-              <div className="text-[#655A7B] mt-0.5">{researchStageText || 'Scanning psychological literature archives...'}</div>
-            </div>
-          </div>
-          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full bg-white/70 text-[#7A6F91] font-semibold text-[11px] border border-[#DDD8E6]">
-            Perplexity-Style Agent Pipeline
-          </span>
-        </div>
-      )}
 
       {/* Notice on Auto-Rotation Logic */}
       <div className="mb-6 px-4 py-2.5 rounded-xl bg-[#F8F6F1] border border-[#EAE4D9] flex items-center justify-between text-xs text-[#596773]">
@@ -179,12 +142,6 @@ export const TopicGrid = ({
               currentMode={currentMode}
               isCompleted={completedTopicIds.includes(topic.id)}
               onSelect={onSelectTopic}
-              onToggleComplete={(id) => {
-                onToggleComplete(id);
-                if (!completedTopicIds.includes(id)) {
-                  onTriggerConfetti();
-                }
-              }}
             />
           ))}
         </div>

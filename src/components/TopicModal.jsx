@@ -10,7 +10,8 @@ import {
   Scale,
   Shield,
   Zap,
-  Layers
+  Layers,
+  BookOpen
 } from 'lucide-react';
 import { DialecticView } from './DialecticView';
 import { getDialecticForTopic, getTopOnePercentFramework } from '../data/topics';
@@ -19,7 +20,7 @@ export const TopicModal = ({
   topic, 
   currentMode, 
   onClose, 
-  onMarkComplete, 
+  onStudyTopic, 
   isCompleted,
   onShowToast,
   onTriggerConfetti
@@ -246,22 +247,24 @@ export const TopicModal = ({
 
         {/* Modal Bottom Actions */}
         <div className="mt-8 pt-4 border-t border-[#F2EEE7] flex items-center justify-between gap-3">
-          <button
-            onClick={() => {
-              onMarkComplete(topic.id);
-              if (!isCompleted) {
-                onTriggerConfetti();
-              }
-            }}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
-              isCompleted 
-                ? 'bg-[#EFF4EE] text-[#52684F] border-[#C2D6C0]' 
-                : 'bg-white text-[#596773] border-[#E7E2D8] hover:border-[#D0C8BC]'
-            }`}
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>{isCompleted ? "Transferred to Library" : "Mark Mastered"}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                onClose();
+                onStudyTopic?.(topic);
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#7A6F91] hover:bg-[#685D7F] text-white transition-all shadow-subtle cursor-pointer"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>Study Session</span>
+            </button>
+            {isCompleted && (
+              <span className="flex items-center gap-1 text-xs font-bold text-[#244C20] bg-[#EFF4EE] px-2.5 py-1 rounded-lg border border-[#C8DEC5]">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#244C20]" />
+                Mastered
+              </span>
+            )}
+          </div>
 
           <button
             onClick={onClose}

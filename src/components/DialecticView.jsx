@@ -31,7 +31,7 @@ export const DialecticView = ({
   if (!dialectic) {
     return (
       <div className="p-6 rounded-2xl bg-white border border-[#E7E2D8] text-center text-xs text-[#7E8B97]">
-        Dialectic analysis is being synthesized for this topic.
+        Dialectic analysis is not available for this topic.
       </div>
     );
   }

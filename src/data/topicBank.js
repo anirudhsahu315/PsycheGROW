@@ -1,13 +1,7 @@
-// Topic Generation & Deep Research Agent
-// Simulates an asynchronous Perplexity-style deep research workflow
-// Synthesizes high-yield, peer-reviewed psychology topics complete with hooks, scenario labs, Socratic quizzes, and content angles.
+// Curated Topic Bank
+// High-yield psychology topics complete with scenario labs, Socratic quizzes, and content angles.
 
-import { PSYCHOLOGY_CATEGORIES, getDialecticForTopic, getTopOnePercentFramework } from './topics.js';
-
-const GENERATED_TOPICS_STORAGE_KEY = 'psychegrow_generated_topics';
-
-// Pre-curated empirical research database across categories
-const EMPIRICAL_RESEARCH_TOPIC_BANK = [
+export const CURATED_TOPIC_BANK = [
   // ==========================================
   // COGNITIVE PSYCHOLOGY
   // ==========================================
@@ -16,6 +10,23 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
     title: 'Ego Depletion & Decision Fatigue',
     branch: 'Cognitive Psychology',
     categoryKey: 'cognitive',
+    evidenceStatus: 'contested',
+    references: [
+      {
+        title: 'A Multilab Preregistered Replication of the Ego-Depletion Effect',
+        authors: 'Hagger, M. S., et al.',
+        year: 2016,
+        url: 'https://pubmed.ncbi.nlm.nih.gov/27474142/',
+        note: 'Multi-lab registered replication report of 23 laboratories finding an effect size indistinguishable from zero.',
+      },
+      {
+        title: 'Ego depletion: Is the active self a limited resource?',
+        authors: 'Baumeister, R. F., Bratslavsky, E., Muraven, M., & Tice, D. M.',
+        year: 1998,
+        url: 'https://pubmed.ncbi.nlm.nih.gov/9599441/',
+        note: 'Seminal paper proposing the limited-resource model of self-control.',
+      },
+    ],
     branchColor: {
       bg: 'bg-[#F2EFF6]',
       text: 'text-[#655A7B]',
@@ -24,14 +35,14 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       badge: 'bg-[#EAE4F2]',
     },
     icon: 'Brain',
-    tagline: 'Willpower is not a moral virtue; it is a depleting biological battery.',
-    teaser: 'Why judges grant 65% parole in the early morning, and near 0% right before lunch.',
+    tagline: 'Willpower is not a moral virtue; sustained self-control experiences performance decline under heavy load.',
+    teaser: 'Why demanding sequential choices lead decision-makers to default toward passive status-quo options.',
     readTime: '4 min read',
     difficulty: 'Intermediate',
     studyTakeaways: [
-      'Documented by Roy Baumeister in controlled cognitive stamina experiments',
-      'Executive function relies on glucose utilization in the prefrontal cortex',
-      'Remedy: Automate low-stakes decisions (e.g. wardrobe, meals) to protect peak bandwidth',
+      'Originally proposed by Roy Baumeister as a limited mental resource model (Baumeister et al., 1998)',
+      'Contested status: Multi-lab pre-registered replications (Hagger et al., 2016) found near-zero effects, and the glucose mechanism is largely discredited',
+      'Remedy: Automate recurring low-stakes decisions to reduce friction and subjective fatigue',
     ],
     scenarioHook: {
       setting: 'Executive Boardroom at 4:45 PM',
@@ -46,42 +57,58 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       options: [
         {
           id: 'opt-1',
-          text: 'His prefrontal cortex experienced ego depletion, defaulting to the path of least cognitive resistance to conserve remaining glucose.',
+          text: 'Prolonged cognitive exertion produced decision fatigue, defaulting to the path of least cognitive resistance.',
           isCorrect: true,
-          mechanism: 'Decision fatigue systematically impairs risk assessment. When cognitive resources run low, the brain avoids trade-off analysis and defaults to passive acquiescence or impulsive closure.',
+          mechanism: 'Decision fatigue systematically impairs trade-off analysis. When cognitive demands accumulate, decision-makers often default to passive acquiescence, regardless of underlying physiological debates.',
         },
         {
           id: 'opt-2',
           text: 'His overall business intelligence decreased permanently throughout the afternoon.',
           isCorrect: false,
-          mechanism: 'Cognitive capacity is dynamic, not static. It fluctuates based on task load, rest, and metabolic recovery.',
+          mechanism: 'Cognitive performance is dynamic, not static. It fluctuates based on task load, rest, and motivational shifts.',
         },
         {
           id: 'opt-3',
           text: 'He was unconsciously attempting to sabotage company finances.',
           isCorrect: false,
-          mechanism: 'Ego depletion is a physiological limitation of executive attention, not a conscious or subconscious desire for failure.',
+          mechanism: 'Decision fatigue is an attentional and motivational response to extended cognitive demand, not an intent to fail.',
         },
       ],
     },
     deepDiveConclusion: {
-      headline: 'Conserving the Executive Fuel Tank',
-      corePrinciple: 'Every single choice—from picking an email subject line to resolving conflict—draws from the exact same finite pool of executive self-control.',
-      mentalModelFormula: 'High Decision Volume ➔ Prefrontal Fatigue ➔ Defaulting to Passivity or Impulsive Surrender',
-      everydayRule: 'Schedule high-stakes creative and strategic decisions during your first two waking hours; reserve late afternoons for mechanical execution.',
+      headline: 'Conserving Executive Bandwidth',
+      corePrinciple: 'Extended cognitive effort and repeated trade-offs frequently bias subsequent choices toward default options, though whether this stems from depleted physical resources or shifting motivation remains contested.',
+      mentalModelFormula: 'High Decision Volume ➔ Subjective Fatigue ➔ Defaulting to Passivity or Status Quo',
+      everydayRule: 'Schedule high-stakes creative and strategic decisions during your first waking hours; reserve late afternoons for mechanical execution.',
     },
     contentHooks: [
-      { format: 'Short Reel / Insight', hook: 'Why you make terrible choices after 4 PM (and how Steve Jobs beat it).', engagementRate: '94% completion' },
-      { format: 'Carousel Slide', hook: 'The Decision Fatigue Audit: 3 trivial choices draining your willpower daily.', engagementRate: '91% saves' },
+      { format: 'Short Reel / Insight', hook: 'Why you make impulsive choices after 4 PM (and how simplifying routines helps).' },
+      { format: 'Carousel Slide', hook: 'The Decision Fatigue Audit: 3 trivial choices draining your focus daily.' },
     ],
-    scriptTemplate: 'Have you ever noticed that after a long day of making decisions, you eat junk food you swore you would avoid? That is not lack of discipline. It is called Ego Depletion...',
-    stats: { learners: '11.8k', createdContent: '1,940 clips', viralityScore: 95 },
+    scriptTemplate: 'Have you ever noticed that after a long day of making decisions, you default to whatever takes least effort? While the exact biological mechanisms remain contested in psychology, prolonged decision-making undeniably taxes focus...',
   },
   {
     id: 'the-zeigarnik-effect',
     title: 'The Zeigarnik Effect',
     branch: 'Cognitive Psychology',
     categoryKey: 'cognitive',
+    evidenceStatus: 'mixed-evidence',
+    references: [
+      {
+        title: 'Das Behalten erledigter und unerledigter Handlungen',
+        authors: 'Zeigarnik, B.',
+        year: 1927,
+        url: 'https://doi.org/10.1007/BF02409755',
+        note: 'Seminal experimental paper demonstrating preferential recall of interrupted tasks in laboratory settings.',
+      },
+      {
+        title: 'A Dynamic Theory of Personality: Selected Papers',
+        authors: 'Lewin, K.',
+        year: 1935,
+        url: 'https://archive.org/details/dynamictheoryofp00lewi',
+        note: 'Theoretical foundation outlining the quasi-need and psychic tension systems driving task recall.',
+      },
+    ],
     branchColor: {
       bg: 'bg-[#F2EFF6]',
       text: 'text-[#655A7B]',
@@ -90,14 +117,14 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       badge: 'bg-[#EAE4F2]',
     },
     icon: 'Brain',
-    tagline: 'The human brain cannot archive what is left unresolved.',
-    teaser: 'Why unfinished tasks obsessively hijack your attention while completed ones vanish from memory.',
+    tagline: 'Unresolved goals generate persistent cognitive tension until closure or disengagement occurs.',
+    teaser: 'Why unfinished tasks intrude into conscious attention, though replication across modern settings remains mixed.',
     readTime: '3 min read',
     difficulty: 'Beginner',
     studyTakeaways: [
-      'Discovered by Soviet psychologist Bluma Zeigarnik in 1927 observing restaurant waiters',
-      'Uncompleted tasks generate persistent intrusive thoughts and background cognitive load',
-      'Antidote: The "Mental Closing Ritual"—writing down the next physical step disarms the brain loop',
+      'Stemmed from Kurt Lewin’s informal observations of waiters, experimentally tested by Bluma Zeigarnik in 1927',
+      'Uncompleted tasks can generate intrusive thoughts and background cognitive tension, though empirical replications vary',
+      'Antidote: The "Mental Closing Ritual"—writing down the next physical step helps disarm intrusive goal tension',
     ],
     scenarioHook: {
       setting: 'Bedtime at 11:30 PM',
@@ -112,30 +139,29 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       options: [
         {
           id: 'opt-1',
-          text: 'The unfinished status keeps a neural loop actively open in working memory to prevent loss of critical context.',
+          text: 'The unfinished status keeps a goal representation active in working memory to prevent loss of critical context.',
           isCorrect: true,
-          mechanism: 'The brain treats unresolved obligations as active threats to status or goals. The Zeigarnik effect forces intrusive thoughts until cognitive closure is achieved.',
+          mechanism: 'Lewin and Zeigarnik posited that interrupted intentions create persistent cognitive tension, though modern research emphasizes that intrusive thoughts depend heavily on personal task importance.',
         },
         {
           id: 'opt-2',
           text: 'Unsent drafts hold significantly higher monetary value than completed projects.',
           isCorrect: false,
-          mechanism: 'Value is irrelevant; completion status is the trigger. Even trivial unfinished puzzles trigger the exact same intrusive memory retention.',
+          mechanism: 'Value is not the sole trigger; unfulfilled completion status maintains cognitive accessibility across various tasks.',
         },
       ],
     },
     deepDiveConclusion: {
       headline: 'Closing the Open Cognitive Tabs',
-      corePrinciple: 'Your mind is a processor, not an open warehouse. Leaving tasks suspended without a clear next action keeps neural background bandwidth permanently consumed.',
-      mentalModelFormula: 'Incomplete Action ➔ Persistent Cognitive Tension ➔ Attention Hijack ➔ Closure ➔ Memory Purge',
+      corePrinciple: 'Your mind prioritizes active goal representations. Leaving tasks suspended without a clear next action keeps attention tethered, though the strength of this recall effect varies across contexts.',
+      mentalModelFormula: 'Incomplete Action ➔ Persistent Cognitive Tension ➔ Attention Intrusion ➔ Closure ➔ Attenuation',
       everydayRule: 'Before finishing work, write down the single next micro-action for any unfinished task. Once the brain knows the next step is secure, the open loop closes.',
     },
     contentHooks: [
-      { format: 'Short Reel / Insight', hook: 'Why you cannot stop thinking about that one unfinished project in bed.', engagementRate: '96% completion' },
-      { format: 'Carousel Slide', hook: 'How Hollywood cliffhangers weaponize the Zeigarnik Effect against your brain.', engagementRate: '93% saves' },
+      { format: 'Short Reel / Insight', hook: 'Why you cannot stop thinking about that one unfinished project in bed.' },
+      { format: 'Carousel Slide', hook: 'How Hollywood cliffhangers leverage tension from unfinished narratives.' },
     ],
-    scriptTemplate: 'Ever wonder why Netflix episode endings make it physically painful to turn off the TV? In 1927, psychologist Bluma Zeigarnik discovered something shocking about unfinished loops...',
-    stats: { learners: '15.4k', createdContent: '2,630 clips', viralityScore: 98 },
+    scriptTemplate: 'Ever wonder why cliffhangers make it hard to turn off the TV? In 1927, psychologist Bluma Zeigarnik formalized Kurt Lewin’s observations on how uncompleted tasks stay cognitively accessible...',
   },
 
   // ==========================================
@@ -146,6 +172,16 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
     title: 'The Pygmalion Effect',
     branch: 'Social Psychology',
     categoryKey: 'social',
+    evidenceStatus: 'well-supported',
+    references: [
+      {
+        title: 'Pygmalion in the classroom',
+        authors: 'Rosenthal, R., & Jacobson, L.',
+        year: 1968,
+        url: 'https://doi.org/10.1007/BF02322211',
+        note: 'Landmark experiment showing that teacher expectations systematically influenced student intellectual growth.',
+      },
+    ],
     branchColor: {
       bg: 'bg-[#F9F0EC]',
       text: 'text-[#8F5543]',
@@ -154,14 +190,14 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       badge: 'bg-[#F3E2DB]',
     },
     icon: 'Users',
-    tagline: 'Expectations act as self-fulfilling gravitational forces on human performance.',
-    teaser: 'How a teacher or manager’s unspoken belief literally alters another person’s IQ score.',
+    tagline: 'Expectations act as self-fulfilling influences on human performance.',
+    teaser: 'How a teacher or manager’s belief measurably alters another person’s developmental trajectory.',
     readTime: '4 min read',
     difficulty: 'Intermediate',
     studyTakeaways: [
-      'Demonstrated by Robert Rosenthal and Lenore Jacobson in elementary schools in 1968',
+      'Demonstrated by Robert Rosenthal and Lenore Jacobson in elementary classrooms in 1968',
       'High expectations trigger warmer micro-behaviors, richer feedback, and greater patience',
-      'The inverse (The Golem Effect) causes low expectations to produce measurably degraded output',
+      'The inverse (The Golem Effect) shows that low expectations can measurably degrade output',
     ],
     scenarioHook: {
       setting: 'Software Startup Engineering Onboarding',
@@ -195,17 +231,26 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       everydayRule: 'When coaching anyone, frame difficulties as "unlocked opportunities" rather than "inadequacies"—your belief sets the ceiling of their output.',
     },
     contentHooks: [
-      { format: 'Short Reel / Insight', hook: 'How expecting someone to be brilliant actually makes them smarter.', engagementRate: '92% completion' },
-      { format: 'Carousel Slide', hook: 'Pygmalion vs Golem: The invisible psychology of leadership expectations.', engagementRate: '88% saves' },
+      { format: 'Short Reel / Insight', hook: 'How expecting someone to be brilliant actually makes them smarter.' },
+      { format: 'Carousel Slide', hook: 'Pygmalion vs Golem: The invisible psychology of leadership expectations.' },
     ],
     scriptTemplate: 'In 1968, researchers lied to elementary teachers, telling them 5 random children were mathematical geniuses. What happened next changed psychology forever...',
-    stats: { learners: '13.1k', createdContent: '1,890 clips', viralityScore: 94 },
   },
   {
     id: 'the-pratfall-effect',
     title: 'The Pratfall Effect',
     branch: 'Social Psychology',
     categoryKey: 'social',
+    evidenceStatus: 'well-supported',
+    references: [
+      {
+        title: 'The effect of a pratfall on increasing interpersonal attractiveness',
+        authors: 'Aronson, E., Willerman, B., & Floyd, J.',
+        year: 1966,
+        url: 'https://doi.org/10.3758/BF03342263',
+        note: 'Found that an embarrassing blunder increased interpersonal attractiveness when competence was already high.',
+      },
+    ],
     branchColor: {
       bg: 'bg-[#F9F0EC]',
       text: 'text-[#8F5543]',
@@ -229,7 +274,7 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&h=120&q=80',
       story: 'Dr. Vance delivers a tour-de-force presentation on quantum algorithms. The audience is in awe of her brilliance, but she feels distant and intimidating.',
       theFriction: 'While walking to the podium for Q&A, she accidentally knocks over a water pitcher, drenching her index cards and laughing heartily at herself.',
-      theReaction: 'The audience laughs with her, and in the post-talk surveys, her likability and approachable leadership ratings spike by 42%.',
+      theReaction: 'The audience laughs with her, and in the post-talk surveys, her likability and approachable leadership ratings increase significantly.',
     },
     socraticQuiz: {
       question: 'Why did knocking over the water pitcher increase Dr. Vance’s appeal instead of damaging her reputation?',
@@ -255,11 +300,10 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       everydayRule: 'Never hide small, benign errors behind defensiveness. Owning a minor mistake with humor demonstrates immense self-assurance.',
     },
     contentHooks: [
-      { format: 'Short Reel / Insight', hook: 'Why being too perfect makes people secretly dislike you.', engagementRate: '95% completion' },
-      { format: 'Carousel Slide', hook: 'The Pratfall Paradox: How to be competent without being intimidating.', engagementRate: '90% saves' },
+      { format: 'Short Reel / Insight', hook: 'Why being too perfect makes people secretly dislike you.' },
+      { format: 'Carousel Slide', hook: 'The Pratfall Paradox: How to be competent without being intimidating.' },
     ],
     scriptTemplate: 'Do you ever try so hard to look flawless in meetings that you come across as stiff? Here is why psychology says spilling your coffee might actually be your superpower...',
-    stats: { learners: '9.7k', createdContent: '1,420 clips', viralityScore: 91 },
   },
 
   // ==========================================
@@ -270,6 +314,23 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
     title: 'The Hedonic Treadmill',
     branch: 'Clinical & Wellness',
     categoryKey: 'clinical',
+    evidenceStatus: 'well-supported',
+    references: [
+      {
+        title: 'Lottery winners and accident victims: is happiness relative?',
+        authors: 'Brickman, P., Coates, D., & Janoff-Bulman, R.',
+        year: 1978,
+        url: 'https://pubmed.ncbi.nlm.nih.gov/690806/',
+        note: 'Classic study documenting adaptation back toward baseline subjective well-being following major positive and negative life events.',
+      },
+      {
+        title: 'Beyond the hedonic treadmill: revising the adaptation theory of well-being',
+        authors: 'Diener, E., Lucas, R. E., & Scollon, C. N.',
+        year: 2006,
+        url: 'https://pubmed.ncbi.nlm.nih.gov/16719675/',
+        note: 'Revises the original theory, showing baselines can shift over time and differ across life domains.',
+      },
+    ],
     branchColor: {
       bg: 'bg-[#EFF3F6]',
       text: 'text-[#475767]',
@@ -279,13 +340,13 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
     },
     icon: 'HeartHandshake',
     tagline: 'Today’s luxury becomes tomorrow’s invisible baseline.',
-    teaser: 'Why lottery winners and major accident survivors return to the same baseline happiness within one year.',
+    teaser: 'Why lottery winners and major life changes often return closer to baseline happiness over time.',
     readTime: '4 min read',
     difficulty: 'Intermediate',
     studyTakeaways: [
-      'Coined by Brickman and Campbell (1971); verified by Philip Brickman’s lottery study',
-      'Neurochemical adaptation resets dopamine receptors back to set-point homeostasis',
-      'The antidote: Shifting focus from circumstantial gains (money, status) to voluntary intrinsic practices',
+      'Coined by Brickman and Campbell (1971); empirically investigated by Brickman, Coates, and Janoff-Bulman (1978)',
+      'Psychological adaptation habituates emotional intensity toward an individual baseline set-point (Diener et al., 2006)',
+      'The antidote: Shifting focus from circumstantial gains (wealth, status) to voluntary intrinsic practices',
     ],
     scenarioHook: {
       setting: 'Luxury Penthouse in Downtown Manhattan',
@@ -319,11 +380,10 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       everydayRule: 'Invest in experiences of flow, meaningful relationships, and deliberate gratitude—these resist adaptation far longer than material trophies.',
     },
     contentHooks: [
-      { format: 'Short Reel / Insight', hook: 'Why making millions will not fix your anxiety (The Hedonic Treadmill).', engagementRate: '97% completion' },
-      { format: 'Carousel Slide', hook: 'The Happiness Paradox: Why reaching your dream goal always feels anticlimactic.', engagementRate: '94% saves' },
+      { format: 'Short Reel / Insight', hook: 'Why making millions will not fix your anxiety (The Hedonic Treadmill).' },
+      { format: 'Carousel Slide', hook: 'The Happiness Paradox: Why reaching your dream goal always feels anticlimactic.' },
     ],
-    scriptTemplate: 'In 1978, psychologists studied 22 lottery winners who won millions. One year later, their happiness was identical to people who won nothing. Here is why...',
-    stats: { learners: '16.9k', createdContent: '3,100 clips', viralityScore: 99 },
+    scriptTemplate: 'In 1978, psychologists studied lottery winners and accident survivors. Over time, their subjective happiness trended back toward baseline far more than expected. Here is why...',
   },
 
   // ==========================================
@@ -334,6 +394,23 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
     title: 'The Decoy Effect (Asymmetric Dominance)',
     branch: 'Consumer Psychology',
     categoryKey: 'consumer',
+    evidenceStatus: 'well-supported',
+    references: [
+      {
+        title: 'Adding Asymmetrically Dominated Alternatives: Violations of Regularity and the Similarity Hypothesis',
+        authors: 'Huber, J., Payne, J. W., & Puto, C.',
+        year: 1982,
+        url: 'https://doi.org/10.1086/208899',
+        note: 'Seminal paper experimentally demonstrating the asymmetric dominance effect in choice sets.',
+      },
+      {
+        title: 'Predictably Irrational: The Hidden Forces That Shape Our Decisions',
+        authors: 'Ariely, D.',
+        year: 2008,
+        url: 'https://archive.org/details/predictablyirrat0000arie',
+        note: 'Popularized consumer applications of the decoy effect using subscription tiers.',
+      },
+    ],
     branchColor: {
       bg: 'bg-[#F8F5EC]',
       text: 'text-[#7D6638]',
@@ -383,11 +460,10 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       everydayRule: 'Whenever choosing between three tiers, ask: "If Option 2 did not exist, would I still pay the full price for Option 3?"',
     },
     contentHooks: [
-      { format: 'Short Reel / Insight', hook: 'How movie theaters trick your brain with the 50-cent popcorn trap.', engagementRate: '98% completion' },
-      { format: 'Carousel Slide', hook: 'The Decoy Effect in SaaS: How pricing pages manipulate your subscription.', engagementRate: '95% saves' },
+      { format: 'Short Reel / Insight', hook: 'How movie theaters trick your brain with the 50-cent popcorn trap.' },
+      { format: 'Carousel Slide', hook: 'The Decoy Effect in SaaS: How pricing pages manipulate your subscription.' },
     ],
     scriptTemplate: 'Next time you buy a coffee or popcorn, look at the middle size. You think it is an option for moderate appetites? Think again. It is a psychological trap called the Decoy Effect...',
-    stats: { learners: '21.5k', createdContent: '4,120 clips', viralityScore: 99 },
   },
 
   // ==========================================
@@ -398,6 +474,23 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
     title: 'Implementation Intentions',
     branch: 'Behavioral Psychology',
     categoryKey: 'behavioral',
+    evidenceStatus: 'well-supported',
+    references: [
+      {
+        title: 'Implementation intentions: Strong effects of simple plans',
+        authors: 'Gollwitzer, P. M.',
+        year: 1999,
+        url: 'https://doi.org/10.1037/0003-066X.54.7.493',
+        note: 'Seminal paper detailing how if-then plans link situational cues directly to goal-directed responses.',
+      },
+      {
+        title: 'Implementation intentions and goal achievement: A meta-analysis of effects and processes',
+        authors: 'Gollwitzer, P. M., & Sheeran, P.',
+        year: 2006,
+        url: 'https://doi.org/10.1016/S0065-2601(06)38002-1',
+        note: 'Meta-analysis across 94 independent tests demonstrating a medium-to-large effect size (d = 0.65) on goal attainment.',
+      },
+    ],
     branchColor: {
       bg: 'bg-[#EFF4EE]',
       text: 'text-[#52684F]',
@@ -407,13 +500,13 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
     },
     icon: 'Compass',
     tagline: 'Goals tell you where to go; If-Then algorithms tell the nervous system when to act.',
-    teaser: 'The 2-sentence linguistic structure that triples your statistical probability of sticking to any habit.',
+    teaser: 'The structured linguistic plan that dramatically increases the probability of sticking to a habit.',
     readTime: '3 min read',
     difficulty: 'Beginner',
     studyTakeaways: [
-      'Pioneered by German psychologist Peter Gollwitzer in 1999 across over 90 empirical studies',
-      'Pre-deciding "WHEN, WHERE, and HOW" offloads self-control from executive thought to environmental cues',
-      'Raises habit execution rates from 35% up to 91% for difficult wellness and study behaviors',
+      'Pioneered by German psychologist Peter Gollwitzer in 1999 across extensive empirical studies',
+      'Pre-deciding "WHEN, WHERE, and HOW" offloads self-control from active deliberation to environmental cues',
+      'Meta-analytic evidence (Gollwitzer & Sheeran, 2006) confirms medium-to-large gains in goal execution across domains',
     ],
     scenarioHook: {
       setting: 'Morning Kitchen Counter',
@@ -421,7 +514,7 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=120&h=120&q=80',
       story: 'Rachel resolved for 8 months to "read research journals daily," but always skipped it because of clinical exhaustion. Then she reframed her intention using Gollwitzer’s formula.',
       theFriction: 'Instead of "I will study more," she programmed: "IF I pour my first cup of coffee at 6:45 AM, THEN I will open PubMed and read exactly one abstract on my phone before sitting down."',
-      theReaction: 'Because the trigger (pouring coffee) was unambiguous and immediate, she completed 28 consecutive days without needing any willpower.',
+      theReaction: 'Because the trigger (pouring coffee) was unambiguous and immediate, she completed 28 consecutive days without needing intense willpower.',
     },
     socraticQuiz: {
       question: 'Why did the "If-Then" formulation succeed where 8 months of strong motivation failed?',
@@ -447,11 +540,10 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       everydayRule: 'Never set a goal without an "If-Then" trigger: "If I close my laptop at 6 PM, then I immediately put on running shoes."',
     },
     contentHooks: [
-      { format: 'Short Reel / Insight', hook: 'Why willpower is a scam (and the 2-sentence habit hack that actually works).', engagementRate: '96% completion' },
-      { format: 'Carousel Slide', hook: 'How to automate your discipline using Peter Gollwitzer’s If-Then formula.', engagementRate: '92% saves' },
+      { format: 'Short Reel / Insight', hook: 'Why willpower alone fails (and the if-then habit formula that actually works).' },
+      { format: 'Carousel Slide', hook: 'How to automate your discipline using Peter Gollwitzer’s If-Then formula.' },
     ],
-    scriptTemplate: 'Stop saying "I am going to work out more this month." Psychology proves that phrase has a 65% failure rate. Here is the 2-sentence formula that turns habits into automatic reflexes...',
-    stats: { learners: '18.3k', createdContent: '3,450 clips', viralityScore: 97 },
+    scriptTemplate: 'Stop saying "I am going to work out more this month." Research demonstrates that vague intentions frequently fail. Here is the 2-sentence formula that turns habits into automatic responses...',
   },
 
   // ==========================================
@@ -462,6 +554,23 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
     title: 'The Somatic Marker Hypothesis',
     branch: 'Neuropsychology & Emotion',
     categoryKey: 'neuropsychology',
+    evidenceStatus: 'well-supported',
+    references: [
+      {
+        title: 'The somatic marker hypothesis and the possible functions of the prefrontal cortex',
+        authors: 'Damasio, A. R.',
+        year: 1996,
+        url: 'https://pubmed.ncbi.nlm.nih.gov/8941953/',
+        note: 'Seminal paper detailing how bioregulatory and visceral processes constrain decision-making spaces.',
+      },
+      {
+        title: 'Deciding advantageously before knowing the advantageous strategy',
+        authors: 'Bechara, A., Damasio, H., Tranel, D., & Damasio, A. R.',
+        year: 1997,
+        url: 'https://pubmed.ncbi.nlm.nih.gov/9036851/',
+        note: 'Experimental study using the Iowa Gambling Task showing somatic signals guide choices prior to conscious reasoning.',
+      },
+    ],
     branchColor: {
       bg: 'bg-[#F8F0F2]',
       text: 'text-[#82525C]',
@@ -470,14 +579,14 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       badge: 'bg-[#F1DEE4]',
     },
     icon: 'Activity',
-    tagline: 'Pure logic without gut feelings leads not to hyper-efficiency, but to total paralysis.',
-    teaser: 'Why patients with damaged emotional centers take 45 minutes to pick between a blue or black pen.',
+    tagline: 'Pure logic without visceral valuation leads not to hyper-efficiency, but to decision paralysis.',
+    teaser: 'Why patients with ventromedial prefrontal lesions struggle over simple decisions without emotional weights.',
     readTime: '4 min read',
     difficulty: 'Advanced',
     studyTakeaways: [
-      'Developed by neuroscientist Antonio Damasio through studies of ventromedial prefrontal cortex damage',
-      'Emotions generate physical "gut" bodily sensations (heart rate, gut tension) that pre-filter options',
-      'Without somatic markers, the brain must compute infinite permutations, resulting in decision deadlock',
+      'Developed by neuroscientist Antonio Damasio through investigations of ventromedial prefrontal cortex lesions',
+      'Emotions generate somatic bodily sensations (autonomic arousal, visceral shifts) that pre-filter behavioral options',
+      'Without somatic markers, the brain computes endless analytical permutations without an internal valuation signal',
     ],
     scenarioHook: {
       setting: 'Neurology Clinic Consultation Room',
@@ -488,13 +597,13 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
       theReaction: 'Unable to feel which option "felt right", he could not choose a simple calendar date, demonstrating that reason requires gut-level emotional valuation.',
     },
     socraticQuiz: {
-      question: 'Why was Elliot, despite a genius-level IQ, unable to schedule an appointment?',
+      question: 'Why was Elliot, despite a high IQ, unable to schedule an appointment?',
       options: [
         {
           id: 'opt-1',
           text: 'Without somatic emotional signals, all options hold equal analytical weight, creating infinite calculation loops.',
           isCorrect: true,
-          mechanism: 'Damasio proved emotions act as cognitive heuristics that instantly discard millions of irrelevant options so conscious thought can finalize action.',
+          mechanism: 'Damasio showed that emotions act as bodily heuristics that rapidly constrain the decision space so conscious thought can finalize action.',
         },
         {
           id: 'opt-2',
@@ -506,198 +615,14 @@ const EMPIRICAL_RESEARCH_TOPIC_BANK = [
     },
     deepDiveConclusion: {
       headline: 'The Wisdom of the Visceral Body',
-      corePrinciple: 'Intuition and bodily reactions are not irrational flaws to be suppressed; they are lightning-fast somatic summaries of millions of past experiences.',
+      corePrinciple: 'Intuition and bodily reactions are not irrational flaws to be suppressed; they are rapid somatic summaries of past learning and survival value.',
       mentalModelFormula: 'Perceived Options ➔ Visceral Somatic Flare (Gut Signal) ➔ Filtered Candidate Set ➔ Rapid Decision',
       everydayRule: 'When stuck between two equivalent choices, flip a coin. Notice whether your gut feels relief or disappointment while the coin is in the air: that is your somatic marker.',
     },
     contentHooks: [
-      { format: 'Short Reel / Insight', hook: 'Why the smartest man in the world could not pick a pen (The Somatic Marker).', engagementRate: '94% completion' },
-      { format: 'Carousel Slide', hook: 'The Neuroscience of Intuition: Why your gut knows before your brain does.', engagementRate: '91% saves' },
+      { format: 'Short Reel / Insight', hook: 'Why the smartest man in the world could not pick a pen (The Somatic Marker).' },
+      { format: 'Carousel Slide', hook: 'The Neuroscience of Intuition: Why your gut knows before your brain does.' },
     ],
-    scriptTemplate: 'We are taught to ignore our emotions and make decisions with pure cold logic. But when neuroscientist Antonio Damasio studied a man who lost all emotions, he discovered something terrifying...',
-    stats: { learners: '12.4k', createdContent: '2,150 clips', viralityScore: 93 },
+    scriptTemplate: 'We are sometimes taught to ignore our emotions and make decisions with pure cold logic. But when neuroscientist Antonio Damasio studied patients who lost emotional signaling, he discovered surprising decision paralysis...',
   }
 ];
-
-/**
- * Load all generated topics from localStorage
- */
-export const loadGeneratedTopics = () => {
-  try {
-    const raw = localStorage.getItem(GENERATED_TOPICS_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-
-/**
- * Save a newly synthesized topic into localStorage cache
- */
-export const saveGeneratedTopic = (topic) => {
-  try {
-    const existing = loadGeneratedTopics();
-    const updated = [topic, ...existing.filter((t) => t.id !== topic.id)];
-    localStorage.setItem(GENERATED_TOPICS_STORAGE_KEY, JSON.stringify(updated));
-    return updated;
-  } catch {
-    return [];
-  }
-};
-
-/**
- * Fallback procedural synthesis when all pre-curated topics in bank are exhausted
- */
-const synthesizeProceduralTopic = (categoryName) => {
-  const catObj = PSYCHOLOGY_CATEGORIES.find(
-    (c) => c.name.toLowerCase() === categoryName?.toLowerCase()
-  ) || PSYCHOLOGY_CATEGORIES[0];
-
-  const uniqueId = `agent-${catObj.id}-${Date.now().toString(36)}`;
-  
-  const proceduralConcepts = [
-    {
-      title: 'Attention Fragmentation & Context Collapse',
-      teaser: 'Why multi-tab task switching costs up to 40% of productive mental bandwidth.',
-      takeaways: ['Documented by Gloria Mark at UC Irvine', 'Resuming an interrupted deep task takes 23 minutes on average', 'Batch communications into discrete time blocks'],
-      hook: 'Why switching windows for 3 seconds destroys 20 minutes of focus.'
-    },
-    {
-      title: 'The Spotlight Effect',
-      teaser: 'Why you overestimate how much other people notice your clothes, mistakes, and nervousness.',
-      takeaways: ['Discovered by Thomas Gilovich (2000)', 'People are trapped in their own egocentric perspective', 'Your perceived flaws are nearly invisible to onlookers'],
-      hook: 'Nobody is looking at your mistake: The psychology of the Spotlight Effect.'
-    },
-    {
-      title: 'The Illusory Truth Effect',
-      teaser: 'Why repeating any false claim enough times makes the brain accept it as undeniable fact.',
-      takeaways: ['Demonstrated by Hasher, Goldstein, and Toppino (1977)', 'Cognitive fluency is mistaken for factual truth', 'The antidote is radical source auditing'],
-      hook: 'How your brain confuses familiarity with truth.'
-    }
-  ];
-
-  const randomConcept = proceduralConcepts[Math.floor(Math.random() * proceduralConcepts.length)];
-
-  return {
-    id: uniqueId,
-    title: `${randomConcept.title}`,
-    branch: catObj.name,
-    categoryKey: catObj.id,
-    branchColor: {
-      bg: catObj.pastel.bg,
-      text: catObj.pastel.text,
-      border: catObj.pastel.border,
-      accent: catObj.accent,
-      badge: catObj.pastel.badgeBg,
-    },
-    icon: catObj.icon || 'Brain',
-    tagline: 'Deep research synthesized topic from peer-reviewed cognitive archives.',
-    teaser: randomConcept.teaser,
-    readTime: '4 min read',
-    difficulty: 'Intermediate',
-    studyTakeaways: randomConcept.takeaways,
-    scenarioHook: {
-      setting: 'Modern Digital Workspace',
-      character: 'Alex, Knowledge Strategist',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
-      story: 'Alex assumed that juggling multiple communication channels simultaneously was a sign of high executive throughput.',
-      theFriction: 'By 2 PM, an overwhelming cognitive fog settled in despite having executed zero physically strenuous tasks.',
-      theReaction: 'Upon auditing his cognitive switching penalty, he realized micro-interruptions were depleting his prefrontal stamina.',
-    },
-    socraticQuiz: {
-      question: `What is the core cognitive mechanism underlying ${randomConcept.title}?`,
-      options: [
-        {
-          id: 'opt-1',
-          text: 'Cognitive switching costs force the brain to purge working memory and reload attentional schemas repeatedly.',
-          isCorrect: true,
-          mechanism: 'The human executive control network cannot process parallel complex linguistic inputs without measurable latency.',
-        },
-        {
-          id: 'opt-2',
-          text: 'The brain simply ran out of electrical voltage.',
-          isCorrect: false,
-          mechanism: 'Metabolic attention allocation, not raw bio-voltage, governs executive throughput.',
-        },
-      ],
-    },
-    deepDiveConclusion: {
-      headline: 'Architecting Attentional Sovereignty',
-      corePrinciple: 'Human attention is an ultra-scarce singular spotlight. Guard your mental focus by removing ambient distractions.',
-      mentalModelFormula: 'Deep Focus Duration × Zero Distractions = Exponential Cognitive Compounding',
-      everydayRule: 'Single-task with ruthless boundary control. When engaged in deep work, close every unessential channel.',
-    },
-    contentHooks: [
-      { format: 'Short Reel / Insight', hook: randomConcept.hook, engagementRate: '96% completion' },
-      { format: 'Carousel Slide', hook: `3 ways ${randomConcept.title} impacts your daily productivity.`, engagementRate: '93% saves' },
-    ],
-    scriptTemplate: `Did you know that every time you glance at a notification, your brain takes 23 minutes to recover peak focus? Here is what science reveals about ${randomConcept.title}...`,
-    stats: { learners: '8.4k', createdContent: '1,120 clips', viralityScore: 92 },
-    isAgentSynthesized: true,
-    synthesizedAt: new Date().toISOString()
-  };
-};
-
-/**
- * Main Dynamic Research Agent function
- * Simulates a Perplexity-style deep research synthesis workflow:
- * 1. Scans empirical psychological archives
- * 2. Extracts mental model heuristics
- * 3. Synthesizes scenario hook, socratic quiz, and content creation studio angles
- * 4. Returns a high-quality, fully structured topic object
- */
-export const researchNewPsychologyTopic = async ({
-  categoryName,
-  existingTopicIds = [],
-  onProgress = null
-}) => {
-  const steps = [
-    `🔍 Deep Research Agent: Querying APA & empirical archives for "${categoryName}"...`,
-    `🧠 Synthesizing mental model dynamics and behavioral heuristics...`,
-    `✍️ Generating practical scenario, Socratic lab, and social content hooks...`,
-    `✨ Finalizing peer-reviewed mental model...`
-  ];
-
-  for (let i = 0; i < steps.length; i++) {
-    if (onProgress) onProgress(steps[i], i + 1, steps.length);
-    // Realistic micro-delay to simulate agentic deep research (180ms per step)
-    await new Promise((resolve) => setTimeout(resolve, 180));
-  }
-
-  // 1. Check if ungenerated topic exists in the pre-curated bank for this category
-  const candidatesInBank = EMPIRICAL_RESEARCH_TOPIC_BANK.filter((t) => {
-    const matchesCategory = !categoryName || t.branch.toLowerCase() === categoryName.toLowerCase();
-    const notUsed = !existingTopicIds.includes(t.id);
-    return matchesCategory && notUsed;
-  });
-
-  let chosenTopic;
-
-  if (candidatesInBank.length > 0) {
-    chosenTopic = {
-      ...candidatesInBank[0],
-      isAgentSynthesized: true,
-      synthesizedAt: new Date().toISOString()
-    };
-  } else {
-    // 2. Synthesize via procedural generator if bank is fully exhausted
-    chosenTopic = synthesizeProceduralTopic(categoryName);
-  }
-
-  // Ensure Dialectic perspective (Scientific vs. Philosophical) is attached
-  if (!chosenTopic.dialectic) {
-    chosenTopic.dialectic = getDialecticForTopic(chosenTopic);
-  }
-
-  // Ensure 4-Step Top 1% Micro-Learning Framework is attached
-  if (!chosenTopic.topOnePercentFramework) {
-    chosenTopic.topOnePercentFramework = getTopOnePercentFramework(chosenTopic);
-  }
-
-  // Persist to local storage
-  saveGeneratedTopic(chosenTopic);
-
-  return chosenTopic;
-};

@@ -7,7 +7,6 @@ import {
   Copy, 
   Check, 
   Sparkles, 
-  Flame, 
   RefreshCw, 
   Clock, 
   ChevronDown,
@@ -386,11 +385,6 @@ export const ContentCreationStudio = ({
                     <span>Duration: {content?.duration}</span>
                   </div>
                   <span className="text-[#D0C8BC]">•</span>
-                  <div className="flex items-center gap-1.5 text-[#52684F] font-semibold">
-                    <Flame className="w-3.5 h-3.5 text-[#647D61]" />
-                    <span>Retention: {content?.metrics?.virality}</span>
-                  </div>
-                  <span className="text-[#D0C8BC]">•</span>
                   <span className="text-[#596773]">Word Count: {content?.metrics?.words} words</span>
                 </div>
 
@@ -460,9 +454,7 @@ export const ContentCreationStudio = ({
                 <div className="flex flex-wrap items-center gap-4 p-3 rounded-xl bg-[#FAF8F5] border border-[#EAE5DC] text-xs text-[#596773]">
                   <span className="font-bold text-[#655A7B]">{content?.formatName}</span>
                   <span className="text-[#D0C8BC]">•</span>
-                  <span className="text-[#52684F] font-semibold">{content?.metrics?.estSaves}</span>
-                  <span className="text-[#D0C8BC]">•</span>
-                  <span className="text-[#8F5543] font-semibold">Swipe Rate: {content?.metrics?.swipeRate}</span>
+                  <span className="text-[#52684F] font-semibold">{content?.slides?.length || 5} Slides</span>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
@@ -514,9 +506,8 @@ export const ContentCreationStudio = ({
                   <span className="text-[#52684F] font-semibold">Reading Time: {content?.readingTime}</span>
                   <span className="text-[#D0C8BC]">•</span>
                   <span>Word Count: ~{content?.metrics?.wordCount} words</span>
-                  <span className="text-[#D0C8BC]">•</span>
-                  <span className="text-[#655A7B] font-semibold">SEO Score: {content?.metrics?.seoScore}</span>
                 </div>
+
 
                 <article className="space-y-5">
                   {content?.sections?.map((section, idx) => (

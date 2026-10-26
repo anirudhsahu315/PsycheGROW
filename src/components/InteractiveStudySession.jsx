@@ -24,6 +24,30 @@ import {
 } from 'lucide-react';
 import { DialecticView } from './DialecticView';
 import { getDialecticForTopic, getTopOnePercentFramework } from '../data/topics';
+import { recordStreakActivity } from '../utils/streakManager';
+
+const EVIDENCE_CONFIG = {
+  'well-supported': {
+    label: 'Well supported',
+    classes: 'bg-[#EFF4EE] text-[#244C20] border-[#C8DEC5]',
+    tooltip: 'Well supported: Supported by robust empirical evidence and replicated findings.',
+  },
+  'mixed-evidence': {
+    label: 'Mixed evidence',
+    classes: 'bg-[#FDF6E2] text-[#634C00] border-[#EADBB6]',
+    tooltip: 'Mixed evidence: Empirical findings show mixed results or depend heavily on specific contexts.',
+  },
+  'contested': {
+    label: 'Contested',
+    classes: 'bg-[#F8EEEC] text-[#743530] border-[#E5CECB]',
+    tooltip: 'Contested: Central effects or proposed mechanisms have failed to replicate or remain debated.',
+  },
+  'philosophical-tradition': {
+    label: 'Philosophical tradition',
+    classes: 'bg-[#F2EFF6] text-[#473A5E] border-[#DCD6E6]',
+    tooltip: 'Philosophical tradition: Rooted in philosophical texts, ethical theory, or psychodynamic tradition.',
+  },
+};
 
 export const InteractiveStudySession = ({ 
   topic, 
@@ -32,10 +56,12 @@ export const InteractiveStudySession = ({
   onMarkMastered,
   isMastered,
   onTriggerConfetti,
-  onShowToast
+  onShowToast,
+  onStreakUpdate
 }) => {
   // Quiz state
   const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const [answeredCorrectly, setAnsweredCorrectly] = useState(false);
   const [copiedArmor, setCopiedArmor] = useState(false);
 
   useEffect(() => {
@@ -44,23 +70,35 @@ export const InteractiveStudySession = ({
 
   if (!topic) return null;
 
+  const evidence = topic.evidenceStatus ? EVIDENCE_CONFIG[topic.evidenceStatus] : null;
   const dialecticData = getDialecticForTopic(topic);
   const framework = getTopOnePercentFramework(topic);
   const { scenarioHook, socraticQuiz } = topic;
   const selectedOption = socraticQuiz?.options?.find(opt => opt.id === selectedOptionId);
+  const canMaster = isMastered || answeredCorrectly || Boolean(selectedOption?.isCorrect);
 
   const handleSelectOption = (option) => {
     setSelectedOptionId(option.id);
 
+    // Call recordStreakActivity('study') on quiz completion (correct or not)
+    const updatedStreak = recordStreakActivity('study');
+    onStreakUpdate?.(updatedStreak);
+
     if (option.isCorrect) {
-      if (!isMastered) {
-        onMarkMastered(topic.id);
-      }
+      setAnsweredCorrectly(true);
       onTriggerConfetti();
-      onShowToast("🎯 Mastered! Psychological armor unlocked & archived to Library.");
+      onShowToast("🎯 Correct answer! You can now mark this topic as Mastered.");
     } else {
       onShowToast("💡 Review the cognitive mechanism below.");
     }
+  };
+
+  const handleToggleMastered = () => {
+    if (!isMastered && !canMaster) {
+      onShowToast("Answer the quiz correctly to master this topic");
+      return;
+    }
+    onMarkMastered(topic.id);
   };
 
   const copyArmorMnemonic = (text) => {
@@ -131,6 +169,14 @@ export const InteractiveStudySession = ({
             >
               Dialectic Lab
             </button>
+            {topic.references && topic.references.length > 0 && (
+              <button
+                onClick={() => scrollToSection('step-sources')}
+                className="px-2.5 py-1 rounded-full hover:bg-[#FAF8F5] hover:text-[#1F262E] transition-all"
+              >
+                Sources
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -162,9 +208,19 @@ export const InteractiveStudySession = ({
             </div>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1F262E] tracking-tight">
-            {topic.title}
-          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1F262E] tracking-tight">
+              {topic.title}
+            </h1>
+            {evidence && (
+              <span 
+                title={evidence.tooltip}
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border ${evidence.classes}`}
+              >
+                {evidence.label}
+              </span>
+            )}
+          </div>
 
           <p className="mt-3 text-base sm:text-lg text-[#596773] italic border-l-2 border-[#7A6F91] pl-4 py-1 leading-relaxed">
             "{topic.teaser}"
@@ -660,6 +716,60 @@ export const InteractiveStudySession = ({
           </section>
         )}
 
+        {/* ========================================================================= */}
+        {/* 6. SOURCES & ACADEMIC REFERENCES */}
+        {/* ========================================================================= */}
+        {topic.references && topic.references.length > 0 && (
+          <section id="step-sources" className="scroll-mt-20 rounded-2xl bg-white border border-[#E7E2D8] p-5 sm:p-7 shadow-card">
+            <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-[#F0ECE4]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-[#F2EFF6] text-[#7A6F91] flex items-center justify-center">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <h2 className="text-base sm:text-lg font-bold text-[#1F262E]">
+                  Sources & References
+                </h2>
+              </div>
+              {evidence && (
+                <span 
+                  title={evidence.tooltip}
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${evidence.classes}`}
+                >
+                  {evidence.label}
+                </span>
+              )}
+            </div>
+
+            <ul className="space-y-3.5">
+              {topic.references.map((ref, idx) => (
+                <li key={idx} className="flex flex-col gap-1 text-xs sm:text-sm text-[#4E5B67]">
+                  <div>
+                    <span className="font-semibold text-[#1F262E]">{ref.authors} ({ref.year}). </span>
+                    <a
+                      href={ref.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-[#7A6F91] hover:text-[#594E70] underline underline-offset-2 focus:outline-none focus:ring-2 focus:ring-[#7A6F91] focus:ring-offset-1 rounded transition-colors"
+                    >
+                      {ref.title}
+                    </a>
+                  </div>
+                  {ref.note && (
+                    <p className="text-xs text-[#7E8B97] italic pl-2 border-l-2 border-[#DDD8E6]">
+                      {ref.note}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Educational Content Disclaimer */}
+        <div className="pt-2 pb-6 text-center text-xs text-[#8C98A4]">
+          <p>Educational content, not professional advice.</p>
+        </div>
+
       </div>
 
       {/* ========================================================================= */}
@@ -680,9 +790,13 @@ export const InteractiveStudySession = ({
                 <span className="text-[#52684F] font-semibold inline-flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#647D61]" /> Mastered & in Library
                 </span>
+              ) : canMaster ? (
+                <span className="text-[#244C20] font-semibold inline-flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#244C20]" /> Quiz passed • Ready to master
+                </span>
               ) : (
-                <span className="text-[#7D6638] font-medium">
-                  {selectedOptionId ? "Insight complete" : "Answer quiz to complete module"}
+                <span className="text-[#7D6638] font-medium" title="Answer the quiz correctly to master this topic">
+                  Answer the quiz correctly to master this topic
                 </span>
               )}
             </span>
@@ -698,6 +812,32 @@ export const InteractiveStudySession = ({
               <RefreshCw className="w-3.5 h-3.5 text-[#7E8B97]" />
               <span>Back to Dashboard</span>
             </button>
+
+            {/* Mark as mastered / Mastered button */}
+            {isMastered ? (
+              <button
+                onClick={handleToggleMastered}
+                title="Mastered (Click to unmaster)"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-[#EFF4EE] hover:bg-[#E3ECE1] border border-[#C2D6C0] text-[#244C20] transition-all shadow-subtle cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4 text-[#244C20]" />
+                <span>Mastered</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleToggleMastered}
+                disabled={!canMaster}
+                title={canMaster ? "Mark this topic as mastered" : "Answer the quiz correctly to master this topic"}
+                className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all shadow-subtle ${
+                  canMaster
+                    ? 'bg-[#244C20] hover:bg-[#1B3A18] text-white border-transparent cursor-pointer'
+                    : 'bg-[#F4F1EA] text-[#A0AAB3] border-[#E2DDD3] cursor-not-allowed opacity-75'
+                }`}
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Mark as mastered</span>
+              </button>
+            )}
 
             <button
               onClick={() => onTurnIntoContent(topic)}

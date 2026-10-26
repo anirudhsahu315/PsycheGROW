@@ -25,9 +25,9 @@ export const getYesterdayString = () => {
 };
 
 /**
- * Calculate difference in calendar days between two "YYYY-MM-DD" strings
+ * Internal helper to calculate difference in calendar days between two "YYYY-MM-DD" strings
  */
-export const getDayDifference = (dateStr1, dateStr2) => {
+const getCalendarDayDiff = (dateStr1, dateStr2) => {
   if (!dateStr1 || !dateStr2) return Infinity;
   const [y1, m1, d1] = dateStr1.split('-').map(Number);
   const [y2, m2, d2] = dateStr2.split('-').map(Number);
@@ -35,8 +35,8 @@ export const getDayDifference = (dateStr1, dateStr2) => {
   const utc1 = Date.UTC(y1, m1 - 1, d1);
   const utc2 = Date.UTC(y2, m2 - 1, d2);
 
-  const diffMs = Math.abs(utc2 - utc1);
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffMs = utc2 - utc1;
+  return Math.round(diffMs / (1000 * 60 * 60 * 24));
 };
 
 /**
@@ -47,13 +47,14 @@ const getInitialStreakSeed = () => {
     streakCount: 0,
     lastActiveDate: null,
     activityDates: [],
-    totalMastered: 0,
+    freezeUsedOn: null,
     lastUpdated: new Date().toISOString()
   };
 };
 
 /**
  * Load streak data from localStorage, validating against current calendar date
+ * Computes derived fields (isActiveToday) dynamically.
  */
 export const loadStreakData = () => {
   try {
@@ -64,7 +65,11 @@ export const loadStreakData = () => {
       data = JSON.parse(raw);
     } else {
       data = getInitialStreakSeed();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      saveStreakData(data);
+    }
+
+    if (!Array.isArray(data.activityDates)) {
+      data.activityDates = [];
     }
 
     const todayStr = getTodayString();
@@ -73,35 +78,66 @@ export const loadStreakData = () => {
     // Check streak status against today and yesterday
     if (data.lastActiveDate) {
       if (data.lastActiveDate === todayStr) {
-        // Already active today, streak is valid
-        data.isActiveToday = true;
+        // Active today
       } else if (data.lastActiveDate === yesterdayStr) {
-        // Active yesterday, streak is currently valid and waiting for today's action
-        data.isActiveToday = false;
+        // Active yesterday, streak is currently valid waiting for today's action
       } else {
-        // Missed at least 1 calendar day -> streak reset to 0 until an action is recorded
-        data.streakCount = 0;
-        data.isActiveToday = false;
-        saveStreakData(data);
+        // Missed at least 1 calendar day. Check difference in calendar days
+        const daysSinceLastActive = getCalendarDayDiff(data.lastActiveDate, todayStr);
+
+        // Streak freeze: if user missed exactly one calendar day (daysSinceLastActive === 2)
+        // and has not used a freeze in the last 7 days, keep streak instead of resetting to 0.
+        const canUseFreeze =
+          data.streakCount > 0 &&
+          daysSinceLastActive === 2 &&
+          (!data.freezeUsedOn || getCalendarDayDiff(data.freezeUsedOn, todayStr) >= 7);
+
+        if (canUseFreeze) {
+          // Freeze applied for the missed day (yesterday)
+          data.freezeUsedOn = yesterdayStr;
+          saveStreakData(data);
+        } else if (data.freezeUsedOn === yesterdayStr) {
+          // Already frozen for yesterday during a previous load today; maintain streak
+        } else {
+          // Missed more than 1 day or freeze unavailable -> reset streak
+          data.streakCount = 0;
+          saveStreakData(data);
+        }
       }
     } else {
       data.streakCount = 0;
-      data.isActiveToday = false;
     }
 
-    return data;
+    // Derive isActiveToday dynamically on load (never persist it into localStorage)
+    const isActiveToday = data.lastActiveDate === todayStr || data.activityDates.includes(todayStr);
+
+    return {
+      ...data,
+      isActiveToday
+    };
   } catch {
-    return getInitialStreakSeed();
+    return {
+      ...getInitialStreakSeed(),
+      isActiveToday: false
+    };
   }
 };
 
 /**
- * Save streak data to localStorage
+ * Save streak data to localStorage without derived or transient fields
  */
 export const saveStreakData = (streakData) => {
   try {
+    // Exclude derived or transient fields (isActiveToday, wasIncremented, isNewDay, totalMastered)
+    const {
+      isActiveToday: _isActiveToday,
+      wasIncremented: _wasIncremented,
+      isNewDay: _isNewDay,
+      totalMastered: _totalMastered,
+      ...toSave
+    } = streakData || {};
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      ...streakData,
+      ...toSave,
       lastUpdated: new Date().toISOString()
     }));
   } catch {
@@ -110,7 +146,7 @@ export const saveStreakData = (streakData) => {
 };
 
 /**
- * Record user activity (e.g. completing a module, finishing quiz, or reviewing a topic)
+ * Record user activity ('study' or 'complete_topic')
  * Accurately increments or maintains streak based on calendar date
  */
 export const recordStreakActivity = (actionType = 'complete_topic') => {
@@ -132,8 +168,8 @@ export const recordStreakActivity = (actionType = 'complete_topic') => {
     // Already recorded activity today! Maintain streak
     wasIncremented = false;
     isNewDay = false;
-  } else if (current.lastActiveDate === yesterdayStr) {
-    // Consecutive day activity! Increment streak counter
+  } else if (current.lastActiveDate === yesterdayStr || current.freezeUsedOn === yesterdayStr) {
+    // Consecutive day activity (either active yesterday or yesterday protected by streak freeze)
     newStreakCount += 1;
     wasIncremented = true;
     isNewDay = true;
@@ -150,9 +186,6 @@ export const recordStreakActivity = (actionType = 'complete_topic') => {
     lastActiveDate: todayStr,
     activityDates,
     isActiveToday: true,
-    totalMastered: actionType === 'complete_topic'
-      ? (current.totalMastered || 0) + 1
-      : (current.totalMastered || 0),
     lastAction: actionType,
     lastUpdated: new Date().toISOString()
   };
@@ -192,18 +225,25 @@ export const getWeeklyActivity = (activityDates = []) => {
 
     const isCurrent = dateStr === todayStr;
     const isCompleted = activityDates.includes(dateStr);
-    const isPast = d <= today;
+    const isPast = dateStr < todayStr;
 
-    if (isCompleted) completedCount++;
-    if (isPast) elapsedCount++;
+    if (isCompleted) {
+      completedCount++;
+    }
+
+    // Strictly past days count towards elapsedCount.
+    // Today only counts towards elapsedCount IF today has activity (isCompleted).
+    // A user who hasn't studied yet today should not be penalised in consistency percentage.
+    if (isPast || (isCurrent && isCompleted)) {
+      elapsedCount++;
+    }
 
     weekDays.push({
       day: dayNames[i],
       dateStr,
       completed: isCompleted,
       current: isCurrent,
-      isPast,
-      xp: i === 6 ? '+75 XP (Bonus)' : '+50 XP'
+      isPast
     });
   }
 
