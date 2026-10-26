@@ -1,0 +1,44 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer base {
+  body {
+    background-color: #FAF8F5;
+    color: #1F262E;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Minimalist scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E2DDD4;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C8C1B4;
+}
+
+/* Subtle clean card utility */
+.card-minimal {
+  background-color: #FFFFFF;
+  border: 1px solid #E7E2D8;
+  border-radius: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.card-minimal:hover {
+  border-color: #D2CAC0;
+}
